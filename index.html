@@ -9,7 +9,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{font-family:'Inter','Segoe UI',sans-serif;background:#0f172a;color:#1e293b;font-size:13px;}
+body{font-family:'Inter','Segoe UI',sans-serif;background:#0f172a;color:#1e293b;font-size:13px;display: none;}
 
 /* ── PAGE SHELL ── */
 .slide{
@@ -172,6 +172,34 @@ tr.hl-amber td{background:#fffbeb;}
 </style>
 </head>
 <body>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const password = prompt("Enter Password");
+  if (password === "ntmigrateparallelrun") {
+    document.body.style.display = "block";
+  } else {
+    document.body.innerHTML = `
+      <div style="
+        height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex-direction:column;
+        font-family:Arial;
+        background:#0f172a;
+        color:white;
+      ">
+        <h1>Access Denied</h1>
+        <p>Invalid Password</p>
+      </div>
+    `;
+    document.body.style.display = "flex";
+  }
+
+});
+</script>
 
 <!-- NAV -->
 <nav class="nav-bar">
