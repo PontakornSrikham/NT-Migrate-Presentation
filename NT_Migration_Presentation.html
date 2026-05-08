@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NT Billing Migration — Executive Presentation</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter','Segoe UI',sans-serif;background:#0f172a;color:#1e293b;font-size:13px;}
+
+/* ── PAGE SHELL ── */
+.slide{
+  width:100%;max-width:1100px;margin:0 auto 0;
+  background:#fff;position:relative;
+  min-height:100vh;display:flex;flex-direction:column;
+}
+
+/* ── PRINT ── */
+@media print{
+  body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .nav-bar,.print-btn{display:none!important;}
+  .slide{page-break-after:always;min-height:0;max-width:100%;margin:0;box-shadow:none;border-radius:0;}
+  .slide:last-child{page-break-after:avoid;}
+}
+@media screen{
+  .slide{margin:0 auto 32px;border-radius:16px;box-shadow:0 8px 48px rgba(0,0,0,.4);overflow:hidden;}
+}
+
+/* ── NAV BAR ── */
+.nav-bar{
+  position:fixed;top:0;left:0;right:0;z-index:999;
+  background:rgba(15,23,42,.95);backdrop-filter:blur(12px);
+  display:flex;align-items:center;gap:0;padding:0 32px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.nav-bar a{
+  color:rgba(255,255,255,.55);text-decoration:none;
+  padding:13px 16px;font-size:12px;font-weight:600;
+  border-bottom:3px solid transparent;margin-bottom:-1px;
+  transition:.2s;white-space:nowrap;
+}
+.nav-bar a:hover{color:#fff;}
+.nav-bar a.active{color:#60a5fa;border-bottom-color:#60a5fa;}
+.nav-spacer{flex:1;}
+.nav-print{
+  background:#1d4ed8;color:#fff;border:none;
+  padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;
+}
+.nav-print:hover{background:#2563eb;}
+
+/* ── SLIDE HEADERS ── */
+.slide-header{
+  padding:30px 44px 26px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
+  position:relative;overflow:hidden;
+}
+.sh-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;opacity:.6;margin-bottom:7px;}
+.sh-title{font-size:26px;font-weight:800;line-height:1.2;color:#fff;margin-bottom:5px;}
+.sh-sub{font-size:13px;opacity:.75;color:#fff;}
+.sh-right{text-align:right;font-size:11px;color:rgba(255,255,255,.65);line-height:2;white-space:nowrap;}
+.sh-page{font-size:11px;color:rgba(255,255,255,.4);margin-top:6px;}
+.sh-circle{position:absolute;border-radius:50%;background:rgba(255,255,255,.05);}
+
+/* Header color themes */
+.hdr-navy{background:linear-gradient(135deg,#0b1f5e 0%,#1251a3 55%,#1976d2 100%);}
+.hdr-dark{background:linear-gradient(135deg,#1e293b 0%,#334155 60%,#475569 100%);}
+.hdr-green{background:linear-gradient(135deg,#14532d 0%,#166534 55%,#15803d 100%);}
+.hdr-red{background:linear-gradient(135deg,#7f1d1d 0%,#991b1b 55%,#b91c1c 100%);}
+
+/* ── SLIDE BODY ── */
+.slide-body{padding:24px 44px 32px;flex:1;}
+
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1.5px solid #e8edf4;margin:20px 0;}
+
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.kpi{
+  border-radius:12px;padding:18px 18px 16px;
+  background:#f8fafc;border-top:4px solid;
+  position:relative;overflow:hidden;
+}
+.kpi-num{font-size:30px;font-weight:800;line-height:1;margin-bottom:3px;}
+.kpi-lbl{font-size:11.5px;color:#64748b;font-weight:500;}
+.kpi-sub{font-size:10.5px;color:#94a3b8;margin-top:3px;}
+
+/* ── TWO-COL LAYOUT ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
+
+/* ── CARD ── */
+.card{background:#fff;border-radius:12px;border:1.5px solid #e2e8f0;overflow:hidden;}
+.card-head{padding:10px 16px;font-size:12px;font-weight:700;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:7px;color:#0f172a;}
+.card-body{padding:12px 16px;}
+.card-head.navy{background:#eff6ff;color:#1d4ed8;}
+.card-head.green{background:#f0fdf4;color:#15803d;}
+.card-head.orange{background:#fff7ed;color:#c2410c;}
+.card-head.red{background:#fef2f2;color:#dc2626;}
+.card-head.purple{background:#faf5ff;color:#7c3aed;}
+.card-head.gray{background:#f8fafc;color:#475569;}
+
+/* ── TABLE ── */
+.tbl-wrap{background:#fff;border-radius:12px;border:1.5px solid #e2e8f0;overflow:hidden;margin-bottom:16px;}
+.tbl-title{padding:10px 16px;font-size:12px;font-weight:700;border-bottom:1px solid #e2e8f0;background:#f8fafc;color:#0f172a;display:flex;align-items:center;gap:6px;}
+table{width:100%;border-collapse:collapse;}
+th{background:#f8fafc;padding:8px 12px;text-align:left;font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.7px;border-bottom:2px solid #e2e8f0;white-space:nowrap;}
+td{padding:7px 12px;font-size:12px;color:#334155;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafbfd;}
+.td-r{text-align:right;font-variant-numeric:tabular-nums;}
+.td-bold{font-weight:700;}
+.td-mono{font-family:monospace;font-size:11px;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+.b-green{background:#dcfce7;color:#15803d;}
+.b-blue{background:#dbeafe;color:#1d4ed8;}
+.b-orange{background:#ffedd5;color:#c2410c;}
+.b-red{background:#fee2e2;color:#dc2626;}
+.b-amber{background:#fef3c7;color:#b45309;}
+.b-gray{background:#f1f5f9;color:#64748b;}
+.b-purple{background:#f3e8ff;color:#7c3aed;}
+.b-teal{background:#ccfbf1;color:#0f766e;}
+
+/* ── PROGRESS BAR ── */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.prog-label{width:140px;font-size:11.5px;color:#475569;flex-shrink:0;}
+.prog-track{flex:1;height:10px;background:#f1f5f9;border-radius:5px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:5px;}
+.prog-val{font-size:11.5px;font-weight:700;color:#1e293b;min-width:50px;text-align:right;}
+
+/* ── STAT BOXES ── */
+.stat-box{border-radius:10px;padding:12px 14px;text-align:center;}
+.sb-num{font-size:22px;font-weight:800;line-height:1;}
+.sb-lbl{font-size:11px;margin-top:3px;}
+
+/* ── RISK CARDS ── */
+.risk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+.risk-card{border-radius:12px;overflow:hidden;border:1.5px solid #e2e8f0;}
+.risk-head{padding:10px 14px;font-weight:700;font-size:12px;color:#fff;display:flex;align-items:center;gap:7px;}
+.risk-body{padding:12px 14px;background:#fff;font-size:12px;color:#475569;line-height:1.6;}
+.risk-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;}
+
+/* ── SECTION TITLE ── */
+.sec{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#0b1f5e;border-left:4px solid #1565c0;padding-left:9px;margin-bottom:12px;}
+
+/* ── DATA VALIDATION SUMMARY ── */
+.dv-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;}
+.dv-card{border-radius:10px;padding:12px;text-align:center;border-top:3px solid;}
+.dv-num{font-size:24px;font-weight:800;line-height:1;}
+.dv-lbl{font-size:10.5px;margin-top:3px;}
+
+/* ── FOOTER ── */
+.slide-footer{
+  padding:10px 44px;
+  background:#f8fafc;border-top:1.5px solid #e2e8f0;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;color:#94a3b8;
+}
+
+/* ── CHART ── */
+.chart-container{position:relative;height:140px;}
+
+/* ── HIGHLIGHT ROW ── */
+tr.hl-red td{background:#fef2f2;}
+tr.hl-green td{background:#f0fdf4;}
+tr.hl-amber td{background:#fffbeb;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav-bar">
+  <a href="#p1" class="active">📊 P1 · Overview</a>
+  <a href="#p2">📅 P2 · 120-Day Plan</a>
+  <a href="#p3">⚙️ P3 · ORDER & RATING</a>
+  <a href="#p4">📄 P4 · INVOICING & PAYMENT</a>
+  <a href="#p5">⚠️ P5 · RISKS & ACTIONS</a>
+  <div class="nav-spacer"></div>
+  <button class="nav-print" onclick="window.print()">🖨️ Print</button>
+</nav>
+
+<div style="height:46px;" class="print-btn"></div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 1 — EXECUTIVE DASHBOARD
+══════════════════════════════════════════════════ -->
+<div class="slide" id="p1">
+  <div class="slide-header hdr-navy">
+    <div style="position:absolute;right:-60px;top:-60px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
+    <div>
+      <div class="sh-label">NT Billing System Migration · KENAN → BRM</div>
+      <div class="sh-title">Post Migration &amp; Parallel Run<br>Executive Summary</div>
+      <div class="sh-sub">รายงานสถานะ · 17 เมษายน – 4 พฤษภาคม 2569 · 17 วันใน Parallel Run</div>
+    </div>
+    <div class="sh-right">
+      รายงาน ณ 4 พฤษภาคม 2569<br>
+      BRM Production<br>
+      Internal Use Only
+      <div class="sh-page">Page 1 / 5</div>
+    </div>
+  </div>
+
+  <div class="slide-body">
+
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="kpi" style="border-color:#15803d;">
+        <div class="kpi-num" style="color:#15803d;">99.72%</div>
+        <div class="kpi-lbl">Migration Success</div>
+        <div class="kpi-sub">Account 845,786 / 848,131</div>
+      </div>
+      <div class="kpi" style="border-color:#dc2626;">
+        <div class="kpi-num" style="color:#dc2626;">52</div>
+        <div class="kpi-lbl">Open Issues</div>
+        <div class="kpi-sub">รวม 62 · ปิด 9 · กำลังทำ 51</div>
+      </div>
+      <div class="kpi" style="border-color:#1d4ed8;">
+        <div class="kpi-num" style="color:#1d4ed8;">98.33%</div>
+        <div class="kpi-lbl">Payment Success Rate</div>
+        <div class="kpi-sub">Matched 14,166 / 14,406 (30/4)</div>
+      </div>
+      <div class="kpi" style="border-color:#7c3aed;">
+        <div class="kpi-num" style="color:#7c3aed;">17</div>
+        <div class="kpi-lbl">Days in Parallel Run</div>
+        <div class="kpi-sub">เริ่ม 20 เม.ย. · ถึง 4 พ.ค. 2569</div>
+      </div>
+    </div>
+
+    <!-- MIGRATION RESULTS -->
+    <div class="sec">Migration Results</div>
+    <div class="tbl-wrap" style="margin-bottom:18px;">
+      <table>
+        <thead>
+          <tr>
+            <th>รายการ</th>
+            <th class="td-r">ทั้งหมด</th>
+            <th class="td-r">เข้าสำเร็จ</th>
+            <th class="td-r">ขาด</th>
+            <th class="td-r">Success %</th>
+            <th>สถานะ / สาเหตุ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="hl-green">
+            <td class="td-bold">Account</td>
+            <td class="td-r">848,131</td>
+            <td class="td-r td-bold">845,786</td>
+            <td class="td-r">2,345</td>
+            <td class="td-r"><span class="badge b-green">99.72%</span></td>
+            <td>Product Config ไม่สมบูรณ์</td>
+          </tr>
+          <tr>
+            <td class="td-bold">Service</td>
+            <td class="td-r">844,333</td>
+            <td class="td-r td-bold">816,394</td>
+            <td class="td-r">27,939</td>
+            <td class="td-r"><span class="badge b-amber">96.69%</span></td>
+            <td>ผลกระทบจาก Account ที่ขาด</td>
+          </tr>
+          <tr class="hl-green">
+            <td class="td-bold">Target Account</td>
+            <td class="td-r">4,499</td>
+            <td class="td-r td-bold">4,499</td>
+            <td class="td-r">—</td>
+            <td class="td-r"><span class="badge b-green">100.00%</span></td>
+            <td>ตรวจสอบถูกต้องทั้งหมด</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ISSUE DISTRIBUTION -->
+    <div class="two-col">
+      <div>
+        <div class="sec">Issue Distribution (รวม 62 รายการ)</div>
+        <div class="two-col" style="gap:10px;margin-bottom:12px;">
+          <div class="card">
+            <div class="card-head gray">แบ่งตาม Area</div>
+            <div class="card-body" style="padding:10px 14px;">
+              <div class="prog-row"><div class="prog-label">🧾 Invoicing</div><div class="prog-track"><div class="prog-fill" style="width:53%;background:#1d4ed8;"></div></div><div class="prog-val">33 <span style="color:#94a3b8;font-size:10px;">53%</span></div></div>
+              <div class="prog-row"><div class="prog-label">📦 Order</div><div class="prog-track"><div class="prog-fill" style="width:27%;background:#7c3aed;"></div></div><div class="prog-val">17 <span style="color:#94a3b8;font-size:10px;">27%</span></div></div>
+              <div class="prog-row"><div class="prog-label">📡 Rating</div><div class="prog-track"><div class="prog-fill" style="width:15%;background:#ea580c;"></div></div><div class="prog-val">9 <span style="color:#94a3b8;font-size:10px;">15%</span></div></div>
+              <div class="prog-row"><div class="prog-label">💳 Payment</div><div class="prog-track"><div class="prog-fill" style="width:5%;background:#0f766e;"></div></div><div class="prog-val">3 <span style="color:#94a3b8;font-size:10px;">5%</span></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head gray">แบ่งตาม Status</div>
+            <div class="card-body" style="padding:10px 14px;">
+              <div class="prog-row"><div class="prog-label">✅ Finish</div><div class="prog-track"><div class="prog-fill" style="width:14.5%;background:#15803d;"></div></div><div class="prog-val">9</div></div>
+              <div class="prog-row"><div class="prog-label">🔄 Inprogress</div><div class="prog-track"><div class="prog-fill" style="width:82%;background:#1d4ed8;"></div></div><div class="prog-val">51</div></div>
+              <div class="prog-row"><div class="prog-label">🔁 Retest</div><div class="prog-track"><div class="prog-fill" style="width:2%;background:#ea580c;"></div></div><div class="prog-val">1</div></div>
+              <div class="prog-row"><div class="prog-label">🔄 Duplicated</div><div class="prog-track"><div class="prog-fill" style="width:2%;background:#94a3b8;"></div></div><div class="prog-val">1</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head gray">Top 3 Issues</div>
+          <div class="card-body" style="padding:8px 14px;font-size:12px;color:#475569;line-height:1.8;">
+            <span style="color:#dc2626;font-weight:700;">① </span>Cut-off date ไม่ตรง CDS — 11 รายการ<br>
+            <span style="color:#ea580c;font-weight:700;">② </span>BIP Report ไม่ถูก — 7 รายการ<br>
+            <span style="color:#d97706;font-weight:700;">③ </span>Service คำนวณไม่ถูก — 6 รายการ
+          </div>
+        </div>
+      </div>
+
+      <!-- DATA VALIDATION SNAPSHOT -->
+      <div>
+        <div class="sec">Data Validation Snapshot</div>
+        <div class="dv-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:10px;">
+          <div class="dv-card" style="border-color:#15803d;background:#f0fdf4;">
+            <div class="dv-num" style="color:#15803d;">4</div>
+            <div class="dv-lbl" style="color:#15803d;">Fixed ✅</div>
+          </div>
+          <div class="dv-card" style="border-color:#1d4ed8;background:#eff6ff;">
+            <div class="dv-num" style="color:#1d4ed8;">6</div>
+            <div class="dv-lbl" style="color:#1d4ed8;">In Progress</div>
+          </div>
+          <div class="dv-card" style="border-color:#dc2626;background:#fef2f2;">
+            <div class="dv-num" style="color:#dc2626;">9</div>
+            <div class="dv-lbl" style="color:#dc2626;">Open ⚠️</div>
+          </div>
+        </div>
+        <div class="dv-grid" style="grid-template-columns:1fr 1fr;margin-bottom:10px;">
+          <div class="dv-card" style="border-color:#7c3aed;background:#faf5ff;">
+            <div class="dv-num" style="color:#7c3aed;">5</div>
+            <div class="dv-lbl" style="color:#7c3aed;">Under Invest.</div>
+          </div>
+          <div class="dv-card" style="border-color:#64748b;background:#f8fafc;">
+            <div class="dv-num" style="color:#64748b;">14</div>
+            <div class="dv-lbl" style="color:#64748b;">False Positive</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head orange">🔴 Critical — C-07</div>
+          <div class="card-body" style="font-size:12px;color:#475569;line-height:1.6;">
+            <strong>2,345 BA ยังไม่ถูก Migrate</strong><br>
+            รอ PDC Configuration — บล็อก Billing activities<br>
+            <span class="badge b-amber" style="margin-top:4px;">⏳ Pending</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOT-FIX NOTE -->
+    <div style="background:#f0fdf4;border-radius:10px;padding:12px 16px;border-left:4px solid #15803d;font-size:12px;color:#166534;">
+      ✅ <strong>ปัญหาหลัง Migration ปิดเรียบร้อย:</strong> FI (Reverse / Payment) และ Invoicing สามารถใช้งานได้ตามปกติแล้ว หลังเติม Data — ทำได้แบบ Hot-fix · <strong>ไม่มี Downtime</strong>
+    </div>
+
+  </div>
+  <div class="slide-footer">
+    <span>NT Billing Migration — Post Migration &amp; Parallel Run Executive Summary</span>
+    <span>Page 1 / 5 · 4 พฤษภาคม 2569</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 2 — 120-DAY MIGRATION RAILWAY
+══════════════════════════════════════════════════ -->
+<div class="slide" id="p2">
+  <div class="slide-header hdr-navy">
+    <div style="position:absolute;right:-60px;top:-60px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
+    <div>
+      <div class="sh-label">NT Billing Migration · แผนช่วงที่ 2 — ระยะ 120 วัน</div>
+      <div class="sh-title">แผนการดำเนินงานระยะ 120 วัน<br>(กิจกรรมช่วงที่ 2)</div>
+      <div class="sh-sub">20 เมษายน 2569 (Start) → 20 สิงหาคม 2569 (Cutover)</div>
+    </div>
+    <div class="sh-right">
+      ⭐ YOU ARE HERE<br>20 เมษายน 2569<br>Internal Use Only
+      <div class="sh-page">Page 2 / 5</div>
+    </div>
+  </div>
+
+  <div class="slide-body">
+
+    <!-- RAILWAY TIMELINE -->
+    <div class="sec" style="margin-bottom:14px;">เส้นทาง Milestone หลัก — 120 วัน</div>
+    <div style="position:relative;margin-bottom:24px;">
+      <!-- Timeline line -->
+      <div style="position:absolute;top:28px;left:0;right:0;height:4px;background:#e2e8f0;border-radius:2px;z-index:0;"></div>
+      <div style="position:absolute;top:28px;left:0;width:18%;height:4px;background:#15803d;border-radius:2px;z-index:1;"></div>
+      <!-- Milestones -->
+      <div style="display:flex;justify-content:space-between;position:relative;z-index:2;">
+
+        <div style="display:flex;flex-direction:column;align-items:center;width:90px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#15803d;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;">🚀</div>
+          <div style="font-size:10.5px;font-weight:700;color:#15803d;margin-top:6px;text-align:center;">20 เม.ย. 2569<br><span style="color:#475569;font-weight:400;">Start</span></div>
+          <div style="font-size:9.5px;color:#64748b;text-align:center;margin-top:2px;">YOU ARE HERE</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;width:90px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#1d4ed8;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:14px;">📋</div>
+          <div style="font-size:10.5px;font-weight:700;color:#1d4ed8;margin-top:6px;text-align:center;">พฤษภาคม<br><span style="color:#475569;font-weight:400;">Billing Cycle #1</span></div>
+          <div style="font-size:9.5px;color:#64748b;text-align:center;margin-top:2px;">Full Month</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;width:90px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#2e7d32;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:14px;">📋</div>
+          <div style="font-size:10.5px;font-weight:700;color:#2e7d32;margin-top:6px;text-align:center;">มิถุนายน<br><span style="color:#475569;font-weight:400;">Billing Cycle #2</span></div>
+          <div style="font-size:9.5px;color:#64748b;text-align:center;margin-top:2px;">Full Month</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;width:90px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#6a1b9a;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:14px;">🔍</div>
+          <div style="font-size:10.5px;font-weight:700;color:#6a1b9a;margin-top:6px;text-align:center;">กรกฎาคม<br><span style="color:#475569;font-weight:400;">Stability Verify</span></div>
+          <div style="font-size:9.5px;color:#64748b;text-align:center;margin-top:2px;">ยืนยันข้อมูลใน BRM</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;width:90px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#00838f;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:14px;">🏁</div>
+          <div style="font-size:10.5px;font-weight:700;color:#00838f;margin-top:6px;text-align:center;">17 ส.ค. 2569<br><span style="color:#475569;font-weight:400;">Sign-off</span></div>
+          <div style="font-size:9.5px;color:#64748b;text-align:center;margin-top:2px;">Final Assessment</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;width:90px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#b91c1c;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:14px;">⭐</div>
+          <div style="font-size:10.5px;font-weight:700;color:#b91c1c;margin-top:6px;text-align:center;">20 ส.ค. 2569<br><span style="color:#475569;font-weight:400;">CUTOVER</span></div>
+          <div style="font-size:9.5px;color:#dc2626;font-weight:700;text-align:center;margin-top:2px;">BRM Production</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 5-MONTH ACTIVITY SUMMARY -->
+    <div class="sec" style="margin-bottom:12px;">แผนกิจกรรมรายเดือน — 5 Month Activity Calendar</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;">
+
+      <!-- APRIL -->
+      <div class="card">
+        <div class="card-head" style="background:#e65100;color:#fff;">🔶 เมษายน<br><small style="font-weight:400;font-size:10px;">Day 20–30 (11 วัน)</small></div>
+        <div class="card-body" style="padding:8px 10px;font-size:11px;color:#475569;line-height:1.85;">
+          <span style="color:#e65100;font-weight:700;">Day 20</span> ADV Inv. รอบ 01<br>
+          <span style="color:#475569;">Day 20–30</span> BD / Onetime<br>
+          <span style="color:#475569;">Day 21</span> Direct Debit / ธนาคาร<br>
+          <span style="color:#475569;">Day 21–24</span> Pload รอบ 02<br>
+          <span style="color:#475569;">Day 25</span> T3 (IDD)<br>
+          <span style="color:#475569;">Day 27–30</span> Report การเงิน<br>
+          <div style="margin-top:6px;"><span class="badge b-orange" style="font-size:9.5px;">⚡ First Live</span></div>
+        </div>
+      </div>
+
+      <!-- MAY -->
+      <div class="card">
+        <div class="card-head" style="background:#1565c0;color:#fff;">🔷 พฤษภาคม<br><small style="font-weight:400;font-size:10px;">Day 1–31 (Full Cycle #1)</small></div>
+        <div class="card-body" style="padding:8px 10px;font-size:11px;color:#475569;line-height:1.85;">
+          <span style="color:#1565c0;font-weight:700;">Day 1–3</span> Retail Inv. (KPI)<br>
+          <span style="color:#475569;">Day 1–4</span> Proforma CDRs<br>
+          <span style="color:#475569;">Day 5–7</span> Single Bill / Pload 01<br>
+          <span style="color:#475569;">Day 6–15</span> CDRs / ADV รอบ 02<br>
+          <span style="color:#475569;">Day 11–15</span> FS 130M รอบ 01<br>
+          <span style="color:#475569;">Day 20–31</span> ADV/BD/DD/Pload/T3<br>
+          <div style="margin-top:6px;"><span class="badge b-blue" style="font-size:9.5px;">Full Billing Cycle</span></div>
+        </div>
+      </div>
+
+      <!-- JUNE -->
+      <div class="card">
+        <div class="card-head" style="background:#2e7d32;color:#fff;">🟢 มิถุนายน<br><small style="font-weight:400;font-size:10px;">Day 1–30 (Full Cycle #2)</small></div>
+        <div class="card-body" style="padding:8px 10px;font-size:11px;color:#475569;line-height:1.85;">
+          <span style="color:#2e7d32;font-weight:700;">Day 1–3</span> Retail Inv. (KPI)<br>
+          <span style="color:#475569;">Day 1–4</span> Proforma CDRs<br>
+          <span style="color:#475569;">Day 5–7</span> Single Bill / Pload 01<br>
+          <span style="color:#475569;">Day 6–15</span> CDRs / ADV รอบ 02<br>
+          <span style="color:#475569;">Day 11–15</span> FS 130M รอบ 01<br>
+          <span style="color:#475569;">Day 20–30</span> ADV/BD/DD/Pload/T3<br>
+          <div style="margin-top:6px;"><span class="badge b-green" style="font-size:9.5px;">แก้ไขปัญหา Phase 1</span></div>
+        </div>
+      </div>
+
+      <!-- JULY -->
+      <div class="card">
+        <div class="card-head" style="background:#6a1b9a;color:#fff;">🟣 กรกฎาคม<br><small style="font-weight:400;font-size:10px;">Day 1–31 (Stability)</small></div>
+        <div class="card-body" style="padding:8px 10px;font-size:11px;color:#475569;line-height:1.85;">
+          <span style="color:#6a1b9a;font-weight:700;">Day 1–3</span> Retail Inv. (KPI)<br>
+          <span style="color:#475569;">Day 1–4</span> Proforma CDRs<br>
+          <span style="color:#475569;">Day 5–7</span> Single Bill / Pload 01<br>
+          <span style="color:#475569;">Day 6–15</span> CDRs / ADV รอบ 02<br>
+          <span style="color:#475569;">Day 11–15</span> FS 130M รอบ 01<br>
+          <span style="color:#475569;">Day 20–31</span> ADV/BD/DD/Pload/T3<br>
+          <div style="margin-top:6px;"><span class="badge b-purple" style="font-size:9.5px;">Stability Verification</span></div>
+        </div>
+      </div>
+
+      <!-- AUGUST -->
+      <div class="card" style="border:1.5px solid #fca5a5;">
+        <div class="card-head" style="background:#00838f;color:#fff;">🟦 สิงหาคม<br><small style="font-weight:400;font-size:10px;">Day 1–17 + Cutover</small></div>
+        <div class="card-body" style="padding:8px 10px;font-size:11px;color:#475569;line-height:1.85;">
+          <span style="color:#00838f;font-weight:700;">Day 1–5</span> Retail / CDRs<br>
+          <span style="color:#475569;">Day 5–7</span> Pload รอบ 01<br>
+          <span style="color:#475569;">Day 6–15</span> CDRs / ADV<br>
+          <span style="color:#475569;">Day 11–15</span> FS 130M รอบ 01<br>
+          <span style="color:#b91c1c;font-weight:700;">Day 17</span> 🏁 Sign-off<br>
+          <div style="margin-top:6px;"><span class="badge b-red" style="font-size:9.5px;">⭐ Cutover Day 20</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CUTOVER STEPS -->
+    <div class="sec" style="margin-bottom:12px;">⭐ Critical Cutover Steps — สิงหาคม 2569</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+
+      <div style="border-radius:12px;overflow:hidden;border:2px solid #00838f;">
+        <div style="background:#00838f;color:#fff;padding:9px 14px;font-weight:700;font-size:12px;">🏁 17 สิงหาคม</div>
+        <div style="background:#fff;padding:10px 14px;font-size:12px;color:#475569;line-height:1.7;">
+          <strong style="color:#00838f;">Final Assessment &amp; Sign-off</strong><br>
+          ทดสอบรักษาระดับ 120 วัน<br>
+          NT ยืนยันความเชื่อมั่น BRM
+        </div>
+      </div>
+
+      <div style="border-radius:12px;overflow:hidden;border:2px solid #d97706;">
+        <div style="background:#d97706;color:#fff;padding:9px 14px;font-weight:700;font-size:12px;">💾 18 สิงหาคม</div>
+        <div style="background:#fff;padding:10px 14px;font-size:12px;color:#475569;line-height:1.7;">
+          <strong style="color:#d97706;">Backup All Servers</strong><br>
+          Backup all servers on<br>
+          BRM / KENAN
+        </div>
+      </div>
+
+      <div style="border-radius:12px;overflow:hidden;border:2px solid #ea580c;">
+        <div style="background:#ea580c;color:#fff;padding:9px 14px;font-weight:700;font-size:12px;">🔀 19 สิงหาคม</div>
+        <div style="background:#fff;padding:10px 14px;font-size:12px;color:#475569;line-height:1.7;">
+          <strong style="color:#ea580c;">Route Traffic to BRM</strong><br>
+          Payment / OM → BRM<br>
+          Single node
+        </div>
+      </div>
+
+      <div style="border-radius:12px;overflow:hidden;border:2px solid #dc2626;box-shadow:0 0 0 3px #fecaca;">
+        <div style="background:#dc2626;color:#fff;padding:9px 14px;font-weight:700;font-size:12px;">⭐ 20 สิงหาคม</div>
+        <div style="background:#fef2f2;padding:10px 14px;font-size:12px;color:#991b1b;line-height:1.7;">
+          <strong style="color:#dc2626;">CUTOVER 🎯</strong><br>
+          BRM กลายเป็น Production<br>
+          KENAN ปิดการใช้งาน
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LEGEND -->
+    <div style="display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:14px;padding:10px 14px;background:#f8fafc;border-radius:10px;font-size:11px;color:#64748b;">
+      <span>🔵 Billing / Invoice</span>
+      <span>🟦 Bank &amp; Data Exchange</span>
+      <span>🟩 Flood &amp; Reconciliation</span>
+      <span>🟧 BD / Onetime</span>
+      <span>🟢 Financial System (FS)</span>
+      <span>✅ Completed</span>
+      <span style="color:#dc2626;font-weight:700;">⭐ Critical Cutover Steps</span>
+    </div>
+
+  </div>
+  <div class="slide-footer">
+    <span>NT Billing Migration — 120-Day Migration Railway Plan</span>
+    <span>Page 2 / 5 · Internal Use Only</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 3 — ORDER & RATING
+══════════════════════════════════════════════════ -->
+<div class="slide" id="p3">
+  <div class="slide-header hdr-dark">
+    <div>
+      <div class="sh-label">Parallel Run · System Monitoring</div>
+      <div class="sh-title">ORDER Transactions &amp; RATING Analysis</div>
+      <div class="sh-sub">OM-MFE / OM-UDB · 20 เมษายน – 4 พฤษภาคม 2569</div>
+    </div>
+    <div class="sh-right">Active — Monitoring<br>Daily Warroom<br>เริ่ม 17 เม.ย. 2569<div class="sh-page">Page 3 / 5</div></div>
+  </div>
+
+  <div class="slide-body">
+
+    <!-- ORDER SUMMARY -->
+    <div class="sec">3.1 ORDER Transactions — BRM Summary (15 วัน)</div>
+    <div class="three-col" style="margin-bottom:14px;">
+      <div class="stat-box" style="background:#f0fdf4;border:1.5px solid #bbf7d0;">
+        <div class="sb-num" style="color:#15803d;">7,316</div>
+        <div class="sb-lbl" style="color:#15803d;">รวม BRM Success</div>
+      </div>
+      <div class="stat-box" style="background:#fef2f2;border:1.5px solid #fecaca;">
+        <div class="sb-num" style="color:#dc2626;">2,950</div>
+        <div class="sb-lbl" style="color:#dc2626;">รวม BRM Failed</div>
+      </div>
+      <div class="stat-box" style="background:#fef9f0;border:1.5px solid #fed7aa;">
+        <div class="sb-num" style="color:#c2410c;">28.7%</div>
+        <div class="sb-lbl" style="color:#c2410c;">Failed % เฉลี่ย (overall)</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Order Daily Table -->
+      <div class="tbl-wrap" style="margin-bottom:0;">
+        <div class="tbl-title">📋 Daily BRM Success / Failed</div>
+        <table>
+          <thead><tr><th>วันที่</th><th class="td-r">Success</th><th class="td-r">Failed</th><th class="td-r">F%</th><th>หมายเหตุ</th></tr></thead>
+          <tbody>
+            <tr><td>20/4</td><td class="td-r">916</td><td class="td-r">167</td><td class="td-r">15.4%</td><td></td></tr>
+            <tr><td>21/4</td><td class="td-r">1,808</td><td class="td-r">266</td><td class="td-r">12.8%</td><td></td></tr>
+            <tr><td>22/4</td><td class="td-r">1,359</td><td class="td-r">106</td><td class="td-r">7.2%</td><td></td></tr>
+            <tr class="hl-red"><td class="td-bold">23/4</td><td class="td-r">702</td><td class="td-r td-bold" style="color:#dc2626;">1,233</td><td class="td-r"><span class="badge b-red">63.7%</span></td><td style="font-size:11px;color:#dc2626;">⚠️ Peak Failed</td></tr>
+            <tr><td>24/4</td><td class="td-r">638</td><td class="td-r">415</td><td class="td-r">39.4%</td><td></td></tr>
+            <tr><td>27/4</td><td class="td-r">1,106</td><td class="td-r">146</td><td class="td-r">11.7%</td><td></td></tr>
+            <tr><td>28/4</td><td class="td-r">91</td><td class="td-r">0</td><td class="td-r"><span class="badge b-green">0%</span></td><td></td></tr>
+            <tr class="hl-red"><td class="td-bold">29/4</td><td class="td-r">67</td><td class="td-r td-bold" style="color:#dc2626;">580</td><td class="td-r"><span class="badge b-red">89.6%</span></td><td style="font-size:11px;color:#dc2626;">⚠️ Peak รอง</td></tr>
+            <tr><td>30/4</td><td class="td-r">586</td><td class="td-r">0</td><td class="td-r"><span class="badge b-green">0%</span></td><td></td></tr>
+            <tr><td>1–3/5</td><td class="td-r">68</td><td class="td-r">0</td><td class="td-r"><span class="badge b-green">0%</span></td><td></td></tr>
+            <tr class="hl-green"><td class="td-bold">4/5</td><td class="td-r">9</td><td class="td-r td-bold" style="color:#15803d;">0</td><td class="td-r"><span class="badge b-green">0%</span></td><td style="font-size:11px;color:#15803d;">✅ แก้ไขแล้ว</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- RATING Analysis -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="sec">3.2 RATING — Suspense Error Analysis</div>
+        <div class="card">
+          <div class="card-head navy">Top Error Codes (Root Cause)</div>
+          <div class="card-body" style="padding:10px 14px;">
+            <div class="prog-row"><div class="prog-label">60018 Customer ID not found</div><div class="prog-track"><div class="prog-fill" style="width:76.3%;background:#dc2626;"></div></div><div class="prog-val" style="color:#dc2626;">76.3%</div></div>
+            <div class="prog-row"><div class="prog-label">60037 Product not found</div><div class="prog-track"><div class="prog-fill" style="width:19.7%;background:#ea580c;"></div></div><div class="prog-val" style="color:#ea580c;">19.7%</div></div>
+            <div class="prog-row"><div class="prog-label">60034 No CDR persisted</div><div class="prog-track"><div class="prog-fill" style="width:3.6%;background:#d97706;"></div></div><div class="prog-val" style="color:#d97706;">3.6%</div></div>
+            <div class="prog-row"><div class="prog-label">60015 Undefined error</div><div class="prog-track"><div class="prog-fill" style="width:1%;background:#94a3b8;"></div></div><div class="prog-val" style="color:#94a3b8;">~1%</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head gray">Suspense % Trend &amp; Insights</div>
+          <div class="card-body" style="padding:8px 14px;font-size:12px;color:#475569;line-height:1.8;">
+            Daily Volume เฉลี่ย: <strong>0.3 – 0.5M events/day</strong><br>
+            Avg Suspense Rate: <strong>12 – 15%</strong><br>
+            Peak Suspense: <span class="badge b-red">30.98%</span> (22/4) · <span class="badge b-orange">30.30%</span> (26/4)<br>
+            Lowest: <span class="badge b-green">2.63%</span> (1/5)<br>
+            CDR Types ที่มีปัญหา: DTRS · HSPADATA · HSPAVOICE · CLASS5
+          </div>
+        </div>
+        <div style="background:#fef9f0;border-radius:10px;padding:12px 14px;border-left:4px solid #d97706;font-size:12px;color:#92400e;">
+          <strong>Root Cause หลัก (96%):</strong> BA / Product Config ไม่สมบูรณ์ — ทำให้ Customer หรือ Product ไม่พบใน BRM<br>
+          <strong>Next Action:</strong> Fix Config สำหรับ Account Top 7 (≈83% ของ Errors) → Re-rate Suspense CDR หลังแก้ Config
+        </div>
+
+        <!-- RATING comparison note -->
+        <div class="card">
+          <div class="card-head green">RATING — KENAN vs BRM Status</div>
+          <div class="card-body" style="padding:8px 14px;font-size:12px;color:#475569;line-height:1.8;">
+            <span class="badge b-green" style="margin-bottom:4px;">✅ Total Match</span> · 23/4 – 27/4 (5 วันติดต่อกัน)<br>
+            Total ตรงกัน แต่ Composition ต่างกัน:<br>
+            KENAN Success สูงกว่า · BRM Suspend &amp; Reject สูงกว่า<br>
+            28/4 – 4/5: รอตรวจสอบ KENAN data
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="slide-footer">
+    <span>NT Billing Migration — ORDER &amp; RATING Analysis</span>
+    <span>Page 3 / 5 · 4 พฤษภาคม 2569</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 4 — INVOICING & PAYMENT
+══════════════════════════════════════════════════ -->
+<div class="slide" id="p4">
+  <div class="slide-header hdr-green">
+    <div>
+      <div class="sh-label">Parallel Run · Financial Processing</div>
+      <div class="sh-title">INVOICING &amp; PAYMENT Reconciliation</div>
+      <div class="sh-sub">BIP Process Steps · Daily Payment Reconciliation · 17 เม.ย. – 4 พ.ค. 2569</div>
+    </div>
+    <div class="sh-right">In Progress<br>Reconciling<div class="sh-page">Page 4 / 5</div></div>
+  </div>
+
+  <div class="slide-body">
+
+    <!-- INVOICING -->
+    <div class="sec">3.3 INVOICING — BIP-Production Process Step Status</div>
+    <div class="tbl-wrap" style="margin-bottom:16px;">
+      <table>
+        <thead>
+          <tr>
+            <th>วันที่</th>
+            <th class="td-r">Gen BA</th>
+            <th class="td-r">BIP-Proforma</th>
+            <th class="td-r">BIP-Production</th>
+            <th class="td-r">Gen BIF</th>
+            <th class="td-r">CDRs Inv.</th>
+            <th class="td-r">ADV Inv.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="hl-red"><td class="td-bold">21/4</td><td class="td-r td-mono">101/21</td><td class="td-r td-mono">100/1</td><td class="td-r td-bold" style="color:#dc2626;">13/87</td><td class="td-r td-mono">—</td><td class="td-r td-mono">10/0</td><td class="td-r td-mono">2/109</td></tr>
+          <tr class="hl-amber"><td>22/4</td><td class="td-r td-mono">25/78</td><td class="td-r td-mono">57/0</td><td class="td-r td-bold" style="color:#ea580c;">15/42</td><td class="td-r td-mono">—</td><td class="td-r td-mono">4/2</td><td class="td-r td-mono">0/2</td></tr>
+          <tr><td>23/4</td><td class="td-r td-mono">22/3</td><td class="td-r td-mono">5/17</td><td class="td-r td-mono">5/0</td><td class="td-r td-mono">5/0</td><td class="td-r td-mono">1/1</td><td class="td-r td-mono">3/8</td></tr>
+          <tr><td>24/4</td><td class="td-r td-mono">26/9</td><td class="td-r td-mono">22/4</td><td class="td-r td-mono">3/19</td><td class="td-r td-mono">3/0</td><td class="td-r td-mono">0/1</td><td class="td-r td-mono">6/15</td></tr>
+          <tr class="hl-green"><td>25–26/4</td><td class="td-r td-mono">1/0</td><td class="td-r td-mono">1/0</td><td class="td-r td-bold" style="color:#15803d;">1/0</td><td class="td-r td-mono">1/0</td><td class="td-r td-mono">—</td><td class="td-r td-mono">1/0</td></tr>
+          <tr><td>27/4</td><td class="td-r td-mono">13/0</td><td class="td-r td-mono">11/2</td><td class="td-r td-mono">2/11</td><td class="td-r td-mono">1/0</td><td class="td-r td-mono">1/3</td><td class="td-r td-mono">3/4</td></tr>
+          <tr><td>29–30/4</td><td class="td-r td-mono">14/0</td><td class="td-r td-mono">14/0</td><td class="td-r td-mono">14/1</td><td class="td-r td-mono">13/0</td><td class="td-r td-mono">4/1</td><td class="td-r td-mono">2/1</td></tr>
+          <tr class="hl-green"><td class="td-bold">4/5</td><td class="td-r td-bold" style="color:#15803d;">20,287/0</td><td class="td-r td-bold" style="color:#15803d;">19,378/0</td><td class="td-r td-bold" style="color:#15803d;">122/0</td><td class="td-r td-mono">111/11</td><td class="td-r td-mono">—</td><td class="td-r td-mono">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:16px;">รูปแบบ: Success / Failed · <strong>BIP-Production</strong> คือขั้นตอนที่มี Failed สูง (21/4: 87) → ทยอยลดลง → 4/5: ผ่านทั้งหมด ✅</div>
+
+    <!-- PAYMENT -->
+    <div class="sec">3.4 PAYMENT — Online Payment Reconciliation (KENAN vs BRM)</div>
+    <div class="tbl-wrap" style="margin-bottom:14px;">
+      <table>
+        <thead>
+          <tr>
+            <th>วันที่</th>
+            <th class="td-r">KENAN</th>
+            <th class="td-r">BRM</th>
+            <th class="td-r">Diff (ก่อน Retry)</th>
+            <th class="td-r">Diff (หลัง Retry)</th>
+            <th class="td-r">Matched</th>
+            <th class="td-r">Success Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Δ 14–21 เม.ย.</td><td class="td-r">34,096</td><td class="td-r">33,631</td><td class="td-r">489</td><td class="td-r">425</td><td class="td-r td-bold">33,671</td><td class="td-r"><span class="badge b-green">98.75%</span></td></tr>
+          <tr><td>22 เม.ย.</td><td class="td-r">6,517</td><td class="td-r">6,156</td><td class="td-r">361</td><td class="td-r">151</td><td class="td-r td-bold">6,366</td><td class="td-r"><span class="badge b-amber">97.68%</span></td></tr>
+          <tr><td>23 เม.ย.</td><td class="td-r">6,080</td><td class="td-r">5,965</td><td class="td-r">115</td><td class="td-r">95</td><td class="td-r td-bold">5,985</td><td class="td-r"><span class="badge b-green">98.44%</span></td></tr>
+          <tr><td>24 เม.ย.</td><td class="td-r">8,129</td><td class="td-r">7,705</td><td class="td-r">424</td><td class="td-r">156</td><td class="td-r td-bold">7,973</td><td class="td-r"><span class="badge b-green">98.08%</span></td></tr>
+          <tr><td>25 เม.ย.</td><td class="td-r">3,295</td><td class="td-r">3,260</td><td class="td-r">35</td><td class="td-r">32</td><td class="td-r td-bold">3,263</td><td class="td-r"><span class="badge b-green">99.03%</span></td></tr>
+          <tr><td>26 เม.ย.</td><td class="td-r">2,730</td><td class="td-r">2,708</td><td class="td-r">22</td><td class="td-r">15</td><td class="td-r td-bold">2,715</td><td class="td-r"><span class="badge b-green">99.45%</span></td></tr>
+          <tr><td>27 เม.ย.</td><td class="td-r">14,668</td><td class="td-r">14,364</td><td class="td-r">304</td><td class="td-r">182</td><td class="td-r td-bold">14,486</td><td class="td-r"><span class="badge b-green">98.76%</span></td></tr>
+          <tr><td>28 เม.ย.</td><td class="td-r">10,438</td><td class="td-r">10,269</td><td class="td-r">169</td><td class="td-r">146</td><td class="td-r td-bold">10,292</td><td class="td-r"><span class="badge b-green">98.60%</span></td></tr>
+          <tr><td>29 เม.ย.</td><td class="td-r">9,902</td><td class="td-r">9,601</td><td class="td-r">301</td><td class="td-r">176</td><td class="td-r td-bold">9,726</td><td class="td-r"><span class="badge b-green">98.22%</span></td></tr>
+          <tr class="hl-amber"><td class="td-bold">30 เม.ย.</td><td class="td-r">14,406</td><td class="td-r">14,166</td><td class="td-r">240</td><td class="td-r" style="color:#d97706;">รอ Retry</td><td class="td-r td-bold">14,166</td><td class="td-r"><span class="badge b-amber">98.33%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="background:#eff6ff;border-radius:10px;padding:12px 16px;border-left:4px solid #1d4ed8;font-size:12px;color:#1e40af;">
+      <strong>Payment Reconciliation: เฉลี่ย ~98.5%</strong> · Total ใกล้เคียงกันทุกวัน · BRM ต่ำกว่า KENAN เล็กน้อย (Diff ที่กำลังตามแก้ด้วย Retry) · สูตร: (KENAN − Diff หลัง Retry) ÷ KENAN
+    </div>
+
+  </div>
+  <div class="slide-footer">
+    <span>NT Billing Migration — Invoicing &amp; Payment Reconciliation</span>
+    <span>Page 4 / 5 · 4 พฤษภาคม 2569</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 5 — RISKS & ACTIONS
+══════════════════════════════════════════════════ -->
+<div class="slide" id="p5">
+  <div class="slide-header hdr-red">
+    <div>
+      <div class="sh-label">Parallel Run · Risk Management &amp; Next Steps</div>
+      <div class="sh-title">ความเสี่ยง &amp; สิ่งที่ต้องดำเนินการ</div>
+      <div class="sh-sub">Risks · Decisions Needed · Data Validation · SLA Key Points</div>
+    </div>
+    <div class="sh-right">Action Required<div class="sh-page">Page 5 / 5</div></div>
+  </div>
+
+  <div class="slide-body">
+
+    <!-- RISKS -->
+    <div class="sec">ความเสี่ยงหลักที่ต้องปิดก่อน T3</div>
+    <div class="risk-grid" style="margin-bottom:16px;">
+      <div class="risk-card">
+        <div class="risk-head" style="background:#dc2626;">⚠️ Risk #1 — Charge Unit</div>
+        <div class="risk-body">
+          <div style="margin-bottom:8px;"><span class="badge b-red">🔴 High</span> <span class="badge b-amber" style="margin-left:4px;">ต้องปิดก่อน T3</span></div>
+          Charge Unit ไม่ตรงกัน<br>
+          เงื่อนไข: ขั้นต่ำ 1 นาที + ทุก 6 วินาที = 1 Unit<br><br>
+          <strong>Action:</strong> ปิด Product Config ก่อน T3 run
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head" style="background:#ea580c;">⚠️ Risk #2 — ทศนิยม</div>
+        <div class="risk-body">
+          <div style="margin-bottom:8px;"><span class="badge b-orange">🟠 Medium</span> <span class="badge b-amber" style="margin-left:4px;">ต้องปิดก่อน T3</span></div>
+          BRM ใช้ 6 ตำแหน่ง / KENAN ใช้ 2 ตำแหน่ง<br>
+          ทำให้ยอดรวมต่างกันเล็กน้อย<br><br>
+          <strong>Action:</strong> แปลง BRM 6→2 หลักทุก Charge Item แล้ว Sum เทียบ
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-head" style="background:#d97706;">⚠️ Risk #3 — Account ขาด</div>
+        <div class="risk-body">
+          <div style="margin-bottom:8px;"><span class="badge b-amber">🟡 Medium</span></div>
+          Account ขาด 2,345 BA<br>
+          Service ขาด 27,939<br><br>
+          <strong>Action:</strong> Partial Migrate รอบถัดไป (Hot-fix · ไม่มี Downtime)
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA VALIDATION + SLA side by side -->
+    <div class="two-col">
+      <!-- DATA VALIDATION DETAIL -->
+      <div>
+        <div class="sec">Data Validation — Top Issues</div>
+        <div class="tbl-wrap" style="margin-bottom:10px;">
+          <div class="tbl-title">🔍 Confirmed Issues ที่สำคัญ</div>
+          <table>
+            <thead><tr><th>Code</th><th>ปัญหา</th><th class="td-r">BA</th><th>สถานะ</th></tr></thead>
+            <tbody>
+              <tr class="hl-amber"><td class="td-bold td-mono" style="color:#7c3aed;">C-07</td><td>2,345 BA ยังไม่ถูก Migrate</td><td class="td-r">2,345</td><td><span class="badge b-amber">⏳ Pending</span></td></tr>
+              <tr class="hl-amber"><td class="td-bold td-mono" style="color:#ea580c;">C-03</td><td>Bill Amount Mismatch (Tax)</td><td class="td-r">8,472</td><td><span class="badge b-teal">◑ Partial Fix</span></td></tr>
+              <tr><td class="td-bold td-mono" style="color:#1d4ed8;">C-09</td><td>Payment Location Missing</td><td class="td-r">1,183</td><td><span class="badge b-blue">🔄 WIP</span></td></tr>
+              <tr><td class="td-bold td-mono" style="color:#d97706;">C-10</td><td>Unexpected Service Timestamp</td><td class="td-r">376</td><td><span class="badge b-gray">❓ Unknown</span></td></tr>
+              <tr class="hl-green"><td class="td-bold td-mono" style="color:#15803d;">C-01</td><td>Missing Service Extended Data</td><td class="td-r">83,169</td><td><span class="badge b-green">✅ Fixed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" style="margin-bottom:10px;">
+          <div class="card-head purple">🔍 Under Investigation (5 รายการ)</div>
+          <div class="card-body" style="padding:8px 14px;font-size:12px;color:#475569;line-height:1.8;">
+            U-02 Service Alias Mismatch (67 BA) · High<br>
+            U-01 Extended Data จาก Customer 360 (46 BA) · Medium<br>
+            U-03 Missing Payment Receipt (9 BA) · Medium<br>
+            U-04/05 Misc (3 BA) · Low
+          </div>
+        </div>
+      </div>
+
+      <!-- SLA + NEXT ACTIONS -->
+      <div>
+        <div class="sec">SLA Key Points &amp; Action Items</div>
+        <div class="card" style="margin-bottom:10px;">
+          <div class="card-head navy">📊 System Availability SLA</div>
+          <div class="card-body" style="padding:8px 14px;">
+            <div class="prog-row"><div class="prog-label">OMMFE / RTC / PM</div><div class="prog-track"><div class="prog-fill" style="width:99%;background:#15803d;"></div></div><div class="prog-val" style="color:#15803d;">≥ 99%</div></div>
+            <div class="prog-row"><div class="prog-label">MNP</div><div class="prog-track"><div class="prog-fill" style="width:98%;background:#1d4ed8;"></div></div><div class="prog-val" style="color:#1d4ed8;">≥ 98%</div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:10px;">
+          <div class="card-head gray">⚡ Incident Response SLA</div>
+          <div class="card-body" style="padding:8px 14px;font-size:12px;line-height:1.9;">
+            <span class="badge b-red">🔴 High</span> ตอบสนอง 15 นาที · แก้ 6 ชม.<br>
+            <span class="badge b-orange">🟠 Medium</span> ตอบสนอง 30 นาที · แก้ 12 ชม.<br>
+            <span class="badge" style="background:#eff6ff;color:#2563eb;">🔵 Low</span> ตอบสนอง 30 นาที · แก้ 48 ชม.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head green">✅ Decisions &amp; Next Steps</div>
+          <div class="card-body" style="padding:8px 14px;font-size:12px;color:#475569;line-height:1.9;">
+            <strong style="color:#dc2626;">① ด่วน:</strong> ปิด Charge Unit Config ก่อน T3<br>
+            <strong style="color:#dc2626;">② ด่วน:</strong> ซ้อมข้อมูลทศนิยม 6→2 BRM→KENAN<br>
+            <strong style="color:#ea580c;">③ ดำเนินการ:</strong> Fix Top 7 BA Config (83% errors)<br>
+            <strong style="color:#ea580c;">④ ดำเนินการ:</strong> Re-rate Suspense CDR หลัง Config<br>
+            <strong style="color:#d97706;">⑤ แผน:</strong> Partial Migrate 2,345 BA (Hot-fix)<br>
+            <strong style="color:#1d4ed8;">⑥ ติดตาม:</strong> Retry Payment Diff รอบ 30/4
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OVERALL SUMMARY -->
+    <div style="background:linear-gradient(135deg,#0b1f5e,#1565c0);border-radius:12px;padding:16px 22px;color:#fff;margin-top:4px;">
+      <div style="font-size:12px;font-weight:700;opacity:.75;margin-bottom:6px;">สรุปภาพรวม</div>
+      <div style="font-size:13px;line-height:1.8;">
+        Migration สำเร็จ <strong>Account 99.72%</strong> / Service 96.69% / Target Account <strong>100%</strong> ·
+        RATING ตรงกัน 5 วันติด · Payment / Invoicing ปรับแก้ Data ได้แบบ Hot-fix ·
+        ประเด็นที่ต้องปิดก่อน T3 คือ <strong>Product Config (Charge Unit)</strong> และ <strong>จุดทศนิยม</strong> ·
+        ทุกการแก้ไขทำได้ <strong>โดยไม่มี Downtime</strong>
+      </div>
+    </div>
+
+  </div>
+  <div class="slide-footer">
+    <span>NT Billing Migration — Risks &amp; Action Items</span>
+    <span>Page 5 / 5 · 4 พฤษภาคม 2569</span>
+  </div>
+</div>
+
+<script>
+// Nav scroll highlight
+const sections = ['p1','p2','p3','p4','p5'];
+const links = document.querySelectorAll('.nav-bar a');
+window.addEventListener('scroll', () => {
+  let cur = 'p1';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 80) cur = id;
+  });
+  links.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+  });
+},{passive:true});
+</script>
+</body>
+</html>
